@@ -1,31 +1,18 @@
 {
-  "headers": [
-    {
-      "source": "**/*.js",
-      "headers": [
-        { "key": "Content-Type", "value": "application/javascript" }
-      ]
-    },
-    {
-      "source": "**/*.mjs",
-      "headers": [
-        { "key": "Content-Type", "value": "application/javascript" }
-      ]
-    }
-  ],
+  "version": 2,
   "builds": [
     {
-      "src": "vercel.json",
+      "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "public"
+        "distDir": "build"
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/frontend/build/$1"
     }
   ]
 }
