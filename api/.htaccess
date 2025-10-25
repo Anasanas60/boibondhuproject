@@ -1,0 +1,18 @@
+<IfModule mod_mime.c>
+    AddType application/wasm .wasm
+    AddType image/svg+xml .svg
+    AddType application/javascript .js
+    AddType text/css .css
+    AddType application/json .json
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Serve existing files directly
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .? - [L]
+    
+    # Route all other requests to index.php
+    RewriteRule .? index.php [L]
+</IfModule>
