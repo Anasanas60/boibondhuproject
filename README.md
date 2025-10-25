@@ -1,3 +1,5 @@
+[![No-localhost-in-dist](https://github.com/Anasanas60/boibondhuproject/actions/workflows/no-localhost-in-dist.yml/badge.svg)](https://github.com/Anasanas60/boibondhuproject/actions/workflows/no-localhost-in-dist.yml)
+
 A full-stack web application that enables students to buy, sell, and exchange textbooks seamlessly within their campus community.
 
 ✨ Features
@@ -80,7 +82,8 @@ Start development server
 
 Download
 npm run dev
-Frontend will be available at http://localhost:5173
+Frontend (development) will be available at http://localhost:5173
+For production, set `VITE_API_BASE_URL` and run `npm run build` to create the production bundle.
 
 Backend Setup
 Database Configuration
@@ -96,10 +99,10 @@ Place the api/ folder in your web server root
 Ensure PHP and MySQL are running
 
 Environment Configuration
-Create .env file in root directory:
+Create `.env` file in the root directory. Set the frontend API base for production (do NOT commit secrets):
 
-Download
-VITE_API_BASE_URL=http://localhost/boibondhu/api
+Example
+VITE_API_BASE_URL=https://api.example.com
 📁 Project Structure
 text
 

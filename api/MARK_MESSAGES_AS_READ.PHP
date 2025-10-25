@@ -1,16 +1,7 @@
 <?php
 // api/mark_messages_as_read.php
 
-// Add CORS headers at the VERY TOP
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
-
+require_once 'cors.php';
 header('Content-Type: application/json');
 require_once 'db_connect.php';
 
@@ -24,37 +15,30 @@ if ($user_id <= 0 || $other_user_id <= 0) {
 }
 
 try {
-    // Mark messages as read where:
-    // - The current user is the recipient (in the conversation thread)
-    // - The other user is the sender
-    // - Messages are currently unread
+    // Postgres-style UPDATE with FROM
     $sql = "UPDATE messages m
-            INNER JOIN message_threads mt ON m.thread_id = mt.id
-            SET m.is_read = 1
-            WHERE ((mt.buyer_id = ? AND mt.seller_id = ?) OR (mt.buyer_id = ? AND mt.seller_id = ?))
-            AND m.sender_id = ?
-            AND m.is_read = 0";
-    
+        SET is_read = TRUE
+        FROM message_threads mt
+        WHERE m.thread_id = mt.id
+        AND ((mt.buyer_id = :u1 AND mt.seller_id = :u2) OR (mt.buyer_id = :u2 AND mt.seller_id = :u1))
+        AND m.sender_id = :sender
+        AND m.is_read = FALSE";
+
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iiiii", $user_id, $other_user_id, $other_user_id, $user_id, $other_user_id);
-    $stmt->execute();
-    
-    $affected_rows = $stmt->affected_rows;
-    
+    $stmt->execute([':u1' => $user_id, ':u2' => $other_user_id, ':sender' => $other_user_id]);
+    $affected_rows = $stmt->rowCount();
+
     echo json_encode([
         'success' => true,
         'message' => "Marked $affected_rows messages as read",
         'affected_rows' => $affected_rows
     ]);
-    
-    $stmt->close();
-    
-} catch (Exception $e) {
+} catch (PDOException $e) {
+    error_log('[MARK_MESSAGES_AS_READ] DB error: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => 'Database error: ' . $e->getMessage()
+        'error' => 'Database error'
     ]);
 }
 
-$conn->close();
 ?>

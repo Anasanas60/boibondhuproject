@@ -1,16 +1,7 @@
 <?php
 // api/get_unread_count.php
 
-// Add CORS headers at the VERY TOP
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
-
+require_once 'cors.php';
 header('Content-Type: application/json');
 require_once 'db_connect.php';
 
@@ -24,35 +15,28 @@ if ($user_id <= 0) {
 
 try {
     // Count unread messages where the current user is the recipient
-    $sql = "SELECT COUNT(*) as unread_count 
+    $sql = "SELECT COUNT(*) as unread_count
             FROM messages m
             INNER JOIN message_threads mt ON m.thread_id = mt.id
-            WHERE (mt.buyer_id = ? OR mt.seller_id = ?) 
-            AND m.sender_id != ? 
+            WHERE (mt.buyer_id = :uid OR mt.seller_id = :uid)
+            AND m.sender_id != :uid
             AND m.is_read = 0";
-    
+
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iii", $user_id, $user_id, $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    
-    $unread_count = $row['unread_count'] ?? 0;
-    
+    $stmt->execute([':uid' => $user_id]);
+    $unread_count = (int)$stmt->fetchColumn();
+
     echo json_encode([
         'success' => true,
         'unread_count' => $unread_count
     ]);
-    
-    $stmt->close();
-    
-} catch (Exception $e) {
+} catch (PDOException $e) {
+    error_log('[GET_UNREAD_COUNT] DB error: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => 'Database error: ' . $e->getMessage(),
+        'error' => 'Database error',
         'unread_count' => 0
     ]);
 }
 
-$conn->close();
 ?>

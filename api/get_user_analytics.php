@@ -1,6 +1,7 @@
 <?php
-// api/user_analytics.php
+// api/get_user_analytics.php
 
+require_once 'cors.php';
 header('Content-Type: application/json');
 require_once 'db_connect.php';
 
@@ -17,12 +18,10 @@ if (!isset($_GET['user_id'])) {
 $user_id = intval($_GET['user_id']);
 
 try {
-    // Fetch user info - FIXED: changed Users to users
-    $user_stmt = $conn->prepare("SELECT user_id, name, email FROM users WHERE user_id = ?");
-    $user_stmt->bind_param("i", $user_id);
-    $user_stmt->execute();
-    $user_result = $user_stmt->get_result();
-    $user = $user_result->fetch_assoc();
+    // Fetch user info
+    $user_stmt = $conn->prepare("SELECT user_id, name, email FROM users WHERE user_id = :uid");
+    $user_stmt->execute([':uid' => $user_id]);
+    $user = $user_stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
         echo json_encode(['error' => 'User not found']);
@@ -30,20 +29,16 @@ try {
     }
 
     // Count books listed by user
-    $books_stmt = $conn->prepare("SELECT COUNT(*) as books_listed FROM Listings WHERE seller_id = ?");
-    $books_stmt->bind_param("i", $user_id);
-    $books_stmt->execute();
-    $books_result = $books_stmt->get_result();
-    $books_count = $books_result->fetch_assoc()['books_listed'];
+    $books_stmt = $conn->prepare("SELECT COUNT(*) as books_listed FROM listings WHERE seller_id = :uid");
+    $books_stmt->execute([':uid' => $user_id]);
+    $books_count = (int)$books_stmt->fetchColumn();
 
     // Count wishlist items
-    $wishlist_stmt = $conn->prepare("SELECT COUNT(*) as wishlist_count FROM Wishlist WHERE user_id = ?");
-    $wishlist_stmt->bind_param("i", $user_id);
-    $wishlist_stmt->execute();
-    $wishlist_result = $wishlist_stmt->get_result();
-    $wishlist_count = $wishlist_result->fetch_assoc()['wishlist_count'];
+    $wishlist_stmt = $conn->prepare("SELECT COUNT(*) as wishlist_count FROM wishlists WHERE user_id = :uid");
+    $wishlist_stmt->execute([':uid' => $user_id]);
+    $wishlist_count = (int)$wishlist_stmt->fetchColumn();
 
-    // Mock achievements and rating (since ratings table doesn't exist yet)
+    // Mock achievements and rating (since ratings table may be missing)
     $achievements = [
         ['title' => 'Eco-Friendly Seller', 'icon' => 'leaf', 'hint' => 'Awarded for donating a book to a campus charity.'],
         ['title' => 'Fast Seller', 'icon' => 'zap', 'hint' => 'Awarded for selling 5+ books in a month.'],
@@ -53,20 +48,15 @@ try {
         'user_id' => $user['user_id'],
         'name' => $user['name'],
         'email' => $user['email'],
-        'books_listed' => intval($books_count),
-        'wishlist_count' => intval($wishlist_count),
-        'avg_rating' => 4.5, // Mock data until ratings table exists
+        'books_listed' => $books_count,
+        'wishlist_count' => $wishlist_count,
+        'avg_rating' => 4.5,
         'achievements' => $achievements,
     ]);
 
-    // Close statements
-    $user_stmt->close();
-    $books_stmt->close();
-    $wishlist_stmt->close();
-
-} catch (Exception $e) {
-    echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
+} catch (PDOException $e) {
+    error_log('[get_user_analytics] DB error: ' . $e->getMessage());
+    echo json_encode(['error' => 'Server error']);
 }
 
-$conn->close();
 ?>

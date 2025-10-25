@@ -1,6 +1,7 @@
 <?php
 // api/rate_seller.php
 
+require_once 'cors.php';
 header('Content-Type: application/json');
 require_once 'db_connect.php';
 
@@ -46,29 +47,32 @@ if ($rating < 1 || $rating > 5) {
     exit;
 }
 
-// Check if already rated
-$check_stmt = $conn->prepare("SELECT rating_id FROM ratings WHERE seller_id = ? AND buyer_id = ? AND listing_id = ?");
-$check_stmt->bind_param("iii", $seller_id, $buyer_id, $listing_id);
-$check_stmt->execute();
-$check_result = $check_stmt->get_result();
+try {
+    // Check if already rated
+    $check_stmt = $conn->prepare("SELECT 1 FROM ratings WHERE seller_id = :seller AND buyer_id = :buyer AND listing_id = :listing LIMIT 1");
+    $check_stmt->execute([':seller' => $seller_id, ':buyer' => $buyer_id, ':listing' => $listing_id]);
+    $exists = $check_stmt->fetchColumn();
+    if ($exists) {
+        echo json_encode(['error' => 'You have already rated this seller for this listing.']);
+        exit;
+    }
 
-if ($check_result->num_rows > 0) {
-    echo json_encode(['error' => 'You have already rated this seller for this listing.']);
-    $check_stmt->close();
-    exit;
+    // Insert rating - match your table columns exactly
+    $stmt = $conn->prepare("INSERT INTO ratings (seller_id, buyer_id, listing_id, rating, review, comment) VALUES (:seller, :buyer, :listing, :rating, :review, :comment) RETURNING rating_id");
+    $stmt->execute([
+        ':seller' => $seller_id,
+        ':buyer' => $buyer_id,
+        ':listing' => $listing_id,
+        ':rating' => $rating,
+        ':review' => $review,
+        ':comment' => $comment,
+    ]);
+    
+    $ratingId = $stmt->fetchColumn();
+    echo json_encode(['success' => 'Rating submitted successfully.', 'rating_id' => $ratingId]);
+} catch (PDOException $e) {
+    error_log('[rate_seller] DB error: ' . $e->getMessage());
+    echo json_encode(['error' => 'Failed to submit rating']);
 }
-$check_stmt->close();
 
-// Insert rating - match your table columns exactly
-$stmt = $conn->prepare("INSERT INTO ratings (seller_id, buyer_id, listing_id, rating, review, comment) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("iiiiss", $seller_id, $buyer_id, $listing_id, $rating, $review, $comment);
-
-if ($stmt->execute()) {
-    echo json_encode(['success' => 'Rating submitted successfully.', 'rating_id' => $stmt->insert_id]);
-} else {
-    echo json_encode(['error' => 'Failed to submit rating: ' . $stmt->error]);
-}
-
-$stmt->close();
-$conn->close();
 ?>

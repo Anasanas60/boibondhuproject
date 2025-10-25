@@ -27,7 +27,8 @@ export const AuthProvider = ({ children }) => {
     if (!currentUserId) return;
 
     try {
-      const response = await fetch(`http://localhost/boibondhu/api/get_unread_count.php?user_id=${currentUserId}`);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+      const response = await fetch(`${API_BASE}/get_unread_count.php?user_id=${currentUserId}`);
       const data = await response.json();
       
       if (data.success) {

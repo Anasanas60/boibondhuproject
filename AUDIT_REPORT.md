@@ -48,13 +48,13 @@ The BoiBondhu platform demonstrates basic functionality as a textbook exchange s
 - Proper use of prepared statements in some queries
 
 **Critical Issues:**
-- **Hardcoded Database Credentials**: `api/db_connect.php` exposes sensitive information
-  ```php
-  // Line 6-8 in db_connect.php
-  define('DB_SERVER', 'localhost');
-  define('DB_USERNAME', 'root');
-  define('DB_PASSWORD', '');
-  ```
+- **Hardcoded Database Credentials**: configuration should use environment variables (example shown)
+   ```php
+   // Use environment variables instead of hard-coded values
+   $dbHost = getenv('DB_HOST') ?: 'localhost';
+   $dbUser = getenv('DB_USER') ?: 'postgres';
+   $dbPass = getenv('DB_PASSWORD') ?: '';
+   ```
 - **No Input Sanitization**: PHP files accept raw user input without validation
 - **Mixed Concerns**: Database logic mixed with business logic
 
@@ -125,7 +125,7 @@ The BoiBondhu platform demonstrates basic functionality as a textbook exchange s
 ### CORS Configuration
 **Score: 5/10**
 
-**Current Setup**: Allows localhost:5173, handles OPTIONS requests
+**Current Setup**: Allows development origins (e.g., localhost:5173) when `APP_ENV=development` or `DEBUG=1`; CORS should be restricted in production
 **Issue**: Too permissive for production - should restrict origins
 
 ---

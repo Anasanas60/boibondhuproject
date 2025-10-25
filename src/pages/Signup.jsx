@@ -38,7 +38,8 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch('http://localhost/boibondhu/api/register.php', {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+      const response = await fetch(`${API_BASE}/register.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

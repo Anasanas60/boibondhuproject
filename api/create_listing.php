@@ -1,16 +1,7 @@
 <?php
 // api/create_listing.php
 
-// Add CORS headers at the VERY TOP
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
-
+require_once 'cors.php';
 header('Content-Type: application/json');
 require_once 'db_connect.php';
 
@@ -39,15 +30,25 @@ $price = floatval($data['price']);
 $condition = trim($data['condition']);
 $description = trim($data['description']);
 
-// Insert new listing
-$stmt = $conn->prepare("INSERT INTO Listings (seller_id, title, author, course_code, edition, price, `condition`, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");$stmt->bind_param("isssidss", $seller_id, $title, $author, $course_code, $edition, $price, $condition, $description);
+try {
+    $sql = "INSERT INTO listings (seller_id, title, author, course_code, edition, price, \"condition\", description) VALUES (:seller_id, :title, :author, :course_code, :edition, :price, :condition, :description) RETURNING listing_id";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':seller_id' => $seller_id,
+        ':title' => $title,
+        ':author' => $author,
+        ':course_code' => $course_code,
+        ':edition' => $edition,
+        ':price' => $price,
+        ':condition' => $condition,
+        ':description' => $description,
+    ]);
 
-if ($stmt->execute()) {
-    echo json_encode(['success' => 'Listing created successfully.', 'listing_id' => $stmt->insert_id]);
-} else {
-    echo json_encode(['error' => 'Failed to create listing: ' . $stmt->error]);
+    $listingId = $stmt->fetchColumn();
+    echo json_encode(['success' => 'Listing created successfully.', 'listing_id' => $listingId]);
+} catch (PDOException $e) {
+    error_log('[create_listing] DB error: ' . $e->getMessage());
+    echo json_encode(['error' => 'Failed to create listing']);
 }
 
-$stmt->close();
-$conn->close();
 ?>

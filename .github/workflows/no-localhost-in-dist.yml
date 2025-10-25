@@ -1,0 +1,42 @@
+name: Build & check dist for localhost
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Verify dist does not contain 'localhost'
+        run: |
+          set -e
+          if [ -d dist ]; then
+            echo "Searching built files for 'localhost'..."
+            if grep -R --line-number --color=always "localhost" dist; then
+              echo "ERROR: 'localhost' string found in 'dist' — please remove hard-coded localhost URLs or set VITE_API_BASE_URL before building." >&2
+              exit 1
+            else
+              echo "OK: no 'localhost' found in dist/"
+            fi
+          else
+            echo "ERROR: dist/ directory not found after build" >&2
+            exit 1
+          fi

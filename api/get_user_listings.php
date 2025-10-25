@@ -1,16 +1,7 @@
 <?php
 // api/get_user_listings.php
 
-// Add CORS headers at the VERY TOP
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
-
+require_once 'cors.php';
 header('Content-Type: application/json');
 require_once 'db_connect.php';
 
@@ -26,22 +17,18 @@ if (!isset($_GET['user_id'])) {
 
 $user_id = intval($_GET['user_id']);
 
-$query = "SELECT listing_id, seller_id, title, author, course_code, edition, price, `condition`, description 
-          FROM Listings 
-          WHERE seller_id = ?";
+try {
+    $query = "SELECT listing_id, seller_id, title, author, course_code, edition, price, \"condition\", description
+              FROM listings
+              WHERE seller_id = :seller_id";
+    $stmt = $conn->prepare($query);
+    $stmt->execute([':seller_id' => $user_id]);
+    $listings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$listings = [];
-while ($row = $result->fetch_assoc()) {
-    $listings[] = $row;
+    echo json_encode(['listings' => $listings]);
+} catch (PDOException $e) {
+    error_log('[get_user_listings] DB error: ' . $e->getMessage());
+    echo json_encode(['error' => 'Failed to fetch listings']);
 }
 
-echo json_encode(['listings' => $listings]);
-
-$stmt->close();
-$conn->close();
 ?>

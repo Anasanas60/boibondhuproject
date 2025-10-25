@@ -1,6 +1,6 @@
 import { mockListings } from './mockListings';
 
-const API_BASE_URL = 'http://localhost/boibondhu/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // User Authentication
 export const registerUser = async (userData) => {

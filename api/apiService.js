@@ -1,5 +1,6 @@
 // src/api/apiService.js
-const API_BASE_URL = 'http://localhost/boibondhu/api';
+// Use Vite-provided env var when available, otherwise fall back to relative '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // User Authentication
 export const registerUser = async (userData) => {

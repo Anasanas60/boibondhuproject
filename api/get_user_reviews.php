@@ -1,16 +1,7 @@
 <?php
 // api/get_user_reviews.php
 
-// Add CORS headers at the VERY TOP
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
-
+require_once 'cors.php';
 header('Content-Type: application/json');
 require_once 'db_connect.php';
 
@@ -26,22 +17,18 @@ if (!isset($_GET['user_id'])) {
 
 $user_id = intval($_GET['user_id']);
 
-$query = "SELECT rating_id, seller_id, buyer_id, rating, review, created_at 
-          FROM ratings 
-          WHERE seller_id = ? OR buyer_id = ?";
+try {
+    $query = "SELECT rating_id, seller_id, buyer_id, rating, review, created_at
+              FROM ratings
+              WHERE seller_id = :uid OR buyer_id = :uid";
+    $stmt = $conn->prepare($query);
+    $stmt->execute([':uid' => $user_id]);
+    $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $user_id, $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$reviews = [];
-while ($row = $result->fetch_assoc()) {
-    $reviews[] = $row;
+    echo json_encode(['success' => true, 'reviews' => $reviews]);
+} catch (PDOException $e) {
+    error_log('[get_user_reviews] DB error: ' . $e->getMessage());
+    echo json_encode(['error' => 'Failed to fetch reviews']);
 }
 
-echo json_encode(['success' => true, 'reviews' => $reviews]);
-
-$stmt->close();
-$conn->close();
 ?>
