@@ -26,22 +26,18 @@ if (!isset($_GET['user_id'])) {
 
 $user_id = intval($_GET['user_id']);
 
-$query = "SELECT listing_id, seller_id, title, author, course_code, edition, price, `condition`, description 
-          FROM Listings 
-          WHERE seller_id = ?";
+$query = 'SELECT listing_id, seller_id, title, author, course_code, edition, price, condition, description 
+          FROM listings 
+          WHERE seller_id = :user_id';
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
+$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->execute();
-$result = $stmt->get_result();
 
 $listings = [];
-while ($row = $result->fetch_assoc()) {
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $listings[] = $row;
 }
 
 echo json_encode(['listings' => $listings]);
-
-$stmt->close();
-$conn->close();
 ?>

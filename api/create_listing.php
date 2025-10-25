@@ -40,14 +40,19 @@ $condition = trim($data['condition']);
 $description = trim($data['description']);
 
 // Insert new listing
-$stmt = $conn->prepare("INSERT INTO Listings (seller_id, title, author, course_code, edition, price, `condition`, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");$stmt->bind_param("isssidss", $seller_id, $title, $author, $course_code, $edition, $price, $condition, $description);
+$stmt = $conn->prepare('INSERT INTO listings (seller_id, title, author, course_code, edition, price, condition, description) VALUES (:seller_id, :title, :author, :course_code, :edition, :price, :condition, :description)');
+$stmt->bindValue(':seller_id', $seller_id, PDO::PARAM_INT);
+$stmt->bindValue(':title', $title, PDO::PARAM_STR);
+$stmt->bindValue(':author', $author, PDO::PARAM_STR);
+$stmt->bindValue(':course_code', $course_code, PDO::PARAM_STR);
+$stmt->bindValue(':edition', $edition, PDO::PARAM_INT);
+$stmt->bindValue(':price', $price, PDO::PARAM_STR);
+$stmt->bindValue(':condition', $condition, PDO::PARAM_STR);
+$stmt->bindValue(':description', $description, PDO::PARAM_STR);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => 'Listing created successfully.', 'listing_id' => $stmt->insert_id]);
+    echo json_encode(['success' => 'Listing created successfully.', 'listing_id' => $conn->lastInsertId()]);
 } else {
-    echo json_encode(['error' => 'Failed to create listing: ' . $stmt->error]);
+    echo json_encode(['error' => 'Failed to create listing.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

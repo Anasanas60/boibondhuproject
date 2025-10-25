@@ -22,33 +22,40 @@ try {
                   FROM listings l 
                   JOIN users u ON l.seller_id = u.user_id 
                   ORDER BY l.created_at DESC 
-                  LIMIT ? OFFSET ?";
+                  LIMIT :limit OFFSET :offset";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("ii", $limit, $offset);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     } else {
         // IMPROVED: Better search with partial matches and relevance scoring
         $searchTerm = "%$searchTerm%";
         $query = "SELECT l.*, u.name as seller_name,
                          CASE 
-                            WHEN l.title LIKE ? THEN 3
-                            WHEN l.author LIKE ? THEN 2
-                            WHEN l.course_code LIKE ? THEN 1
+                            WHEN l.title ILIKE :st1 THEN 3
+                            WHEN l.author ILIKE :st2 THEN 2
+                            WHEN l.course_code ILIKE :st3 THEN 1
                             ELSE 0
                          END as relevance
                   FROM listings l 
                   JOIN users u ON l.seller_id = u.user_id 
-                  WHERE l.title LIKE ? OR l.author LIKE ? OR l.course_code LIKE ?
+                  WHERE l.title ILIKE :st4 OR l.author ILIKE :st5 OR l.course_code ILIKE :st6
                   ORDER BY relevance DESC, l.created_at DESC 
-                  LIMIT ? OFFSET ?";
+                  LIMIT :limit OFFSET :offset";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("ssssssii", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $limit, $offset);
+        $stmt->bindValue(':st1', $searchTerm, PDO::PARAM_STR);
+        $stmt->bindValue(':st2', $searchTerm, PDO::PARAM_STR);
+        $stmt->bindValue(':st3', $searchTerm, PDO::PARAM_STR);
+        $stmt->bindValue(':st4', $searchTerm, PDO::PARAM_STR);
+        $stmt->bindValue(':st5', $searchTerm, PDO::PARAM_STR);
+        $stmt->bindValue(':st6', $searchTerm, PDO::PARAM_STR);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     }
     
     $stmt->execute();
-    $result = $stmt->get_result();
     
     $listings = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $listings[] = $row;
     }
     
@@ -58,14 +65,16 @@ try {
         $countStmt = $conn->prepare($countQuery);
     } else {
         $countQuery = "SELECT COUNT(*) as total FROM listings 
-                      WHERE title LIKE ? OR author LIKE ? OR course_code LIKE ?";
+                      WHERE title ILIKE :st1 OR author ILIKE :st2 OR course_code ILIKE :st3";
         $countStmt = $conn->prepare($countQuery);
-        $countStmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
+        $countStmt->bindValue(':st1', $searchTerm, PDO::PARAM_STR);
+        $countStmt->bindValue(':st2', $searchTerm, PDO::PARAM_STR);
+        $countStmt->bindValue(':st3', $searchTerm, PDO::PARAM_STR);
     }
     
     $countStmt->execute();
-    $countResult = $countStmt->get_result();
-    $total = $countResult->fetch_assoc()['total'];
+    $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+    $total = $countResult['total'];
     
     echo json_encode([
         'success' => true,
@@ -82,6 +91,4 @@ try {
         'error' => 'Search failed: ' . $e->getMessage()
     ]);
 }
-
-$conn->close();
 ?>
