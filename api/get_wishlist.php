@@ -26,23 +26,19 @@ if (!isset($_GET['user_id'])) {
 
 $user_id = intval($_GET['user_id']);
 
-$query = "SELECT w.wishlist_id, w.listing_id, l.title, l.author, l.course_code, l.edition, l.price, l.condition, l.description 
-          FROM Wishlist w 
-          JOIN Listings l ON w.listing_id = l.listing_id 
-          WHERE w.user_id = ?";
+$query = 'SELECT w.wishlist_id, w.listing_id, l.title, l.author, l.course_code, l.edition, l.price, l.condition, l.description 
+          FROM "Wishlist" w 
+          JOIN "Listings" l ON w.listing_id = l.listing_id 
+          WHERE w.user_id = :user_id';
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
+$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->execute();
-$result = $stmt->get_result();
 
 $wishlist = [];
-while ($row = $result->fetch_assoc()) {
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $wishlist[] = $row;
 }
 
 echo json_encode(['wishlist' => $wishlist]);
-
-$stmt->close();
-$conn->close();
 ?>

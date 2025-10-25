@@ -17,19 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 // Fetch all listings with seller information
-$query = "SELECT l.listing_id, l.seller_id, l.title, l.author, l.course_code, l.edition, l.price, l.`condition`, l.description, u.name as seller_name FROM Listings l JOIN users u ON l.seller_id = u.user_id";
-$result = $conn->query($query);
+$query = 'SELECT l.listing_id, l.seller_id, l.title, l.author, l.course_code, l.edition, l.price, l."condition", l.description, u.name as seller_name FROM "Listings" l JOIN users u ON l.seller_id = u.user_id';
+$stmt = $conn->prepare($query);
+$stmt->execute();
 
 $listings = [];
-
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $listings[] = $row;
-    }
-    echo json_encode(['success' => true, 'listings' => $listings]);
-} else {
-    echo json_encode(['error' => 'Failed to fetch listings: ' . $conn->error]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $listings[] = $row;
 }
 
-$conn->close();
+echo json_encode(['success' => true, 'listings' => $listings]);
 ?>

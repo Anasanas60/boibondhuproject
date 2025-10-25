@@ -37,18 +37,17 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // Prepare and execute query to find user by email
-$sql = "SELECT user_id, name, password, email FROM users WHERE email = ?";
+$sql = "SELECT user_id, name, password, email FROM users WHERE email = :email";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $email);
+$stmt->bindValue(':email', $email, PDO::PARAM_STR);
 $stmt->execute();
-$result = $stmt->get_result();
 
-if ($result->num_rows !== 1) {
+if ($stmt->rowCount() !== 1) {
     echo json_encode(['error' => 'Invalid email or password.']);
     exit;
 }
 
-$user = $result->fetch_assoc();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Verify password
 if (!password_verify($password, $user['password'])) {
@@ -65,7 +64,4 @@ echo json_encode([
         'email' => $user['email']
     ]
 ]);
-
-$stmt->close();
-$conn->close();
 ?>

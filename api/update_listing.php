@@ -41,27 +41,32 @@ if (empty($title) || empty($author) || empty($course_code) || $price <= 0 || emp
     exit;
 }
 
-$query = "UPDATE listings SET
-    title = ?,
-    author = ?,
-    course_code = ?,
-    edition = ?,
-    price = ?,
-    `condition` = ?,
-    description = ?,
-    status = ?,
-    updated_at = NOW()
-    WHERE listing_id = ?";
+$query = 'UPDATE listings SET
+    title = :title,
+    author = :author,
+    course_code = :course_code,
+    edition = :edition,
+    price = :price,
+    "condition" = :condition,
+    description = :description,
+    status = :status,
+    updated_at = CURRENT_TIMESTAMP
+    WHERE listing_id = :listing_id';
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ssssdsssi", $title, $author, $course_code, $edition, $price, $condition, $description, $status, $listing_id);
+$stmt->bindValue(':title', $title, PDO::PARAM_STR);
+$stmt->bindValue(':author', $author, PDO::PARAM_STR);
+$stmt->bindValue(':course_code', $course_code, PDO::PARAM_STR);
+$stmt->bindValue(':edition', $edition, PDO::PARAM_STR);
+$stmt->bindValue(':price', $price, PDO::PARAM_STR);
+$stmt->bindValue(':condition', $condition, PDO::PARAM_STR);
+$stmt->bindValue(':description', $description, PDO::PARAM_STR);
+$stmt->bindValue(':status', $status, PDO::PARAM_STR);
+$stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false, 'error' => 'Failed to update listing']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

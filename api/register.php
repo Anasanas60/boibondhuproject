@@ -43,30 +43,29 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // Check if email already exists
-$stmt = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
-$stmt->bind_param("s", $email);
+$stmt = $conn->prepare("SELECT user_id FROM users WHERE email = :email");
+$stmt->bindValue(':email', $email, PDO::PARAM_STR);
 $stmt->execute();
-$stmt->store_result();
-if ($stmt->num_rows > 0) {
+if ($stmt->rowCount() > 0) {
     echo json_encode(['error' => 'Email already registered.']);
     exit;
 }
-$stmt->close();
 
 // Hash password
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
 // Insert new user
-$sql = "INSERT INTO users (name, email, password, campus, year) VALUES (?, ?, ?, ?, ?)";
+$sql = "INSERT INTO users (name, email, password, campus, year) VALUES (:name, :email, :password, :campus, :year)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ssssi", $name, $email, $password_hash, $campus, $year);
+$stmt->bindValue(':name', $name, PDO::PARAM_STR);
+$stmt->bindValue(':email', $email, PDO::PARAM_STR);
+$stmt->bindValue(':password', $password_hash, PDO::PARAM_STR);
+$stmt->bindValue(':campus', $campus, PDO::PARAM_STR);
+$stmt->bindValue(':year', $year, PDO::PARAM_INT);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => 'Registration successful.']);
 } else {
-    echo json_encode(['error' => 'Failed to register user: ' . $stmt->error]);
+    echo json_encode(['error' => 'Failed to register user.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

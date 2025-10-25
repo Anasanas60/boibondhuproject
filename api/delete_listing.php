@@ -42,21 +42,19 @@ if ($listing_id <= 0 || $seller_id <= 0) {
 
 // Prepare and execute DELETE statement
 // Only delete if both listing_id and seller_id match
-$stmt = $conn->prepare("DELETE FROM Listings WHERE listing_id = ? AND seller_id = ?");
-$stmt->bind_param("ii", $listing_id, $seller_id);
+$stmt = $conn->prepare('DELETE FROM "Listings" WHERE listing_id = :listing_id AND seller_id = :seller_id');
+$stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
+$stmt->bindValue(':seller_id', $seller_id, PDO::PARAM_INT);
 
 if ($stmt->execute()) {
-    if ($stmt->affected_rows === 1) {
+    if ($stmt->rowCount() === 1) {
         echo json_encode(['success' => 'Listing deleted successfully.']);
-    } elseif ($stmt->affected_rows === 0) {
+    } elseif ($stmt->rowCount() === 0) {
         echo json_encode(['error' => 'Listing not found or you do not have permission to delete it.']);
     } else {
         echo json_encode(['error' => 'Unexpected error occurred.']);
     }
 } else {
-    echo json_encode(['error' => 'Failed to delete listing: ' . $stmt->error]);
+    echo json_encode(['error' => 'Failed to delete listing.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

@@ -31,29 +31,24 @@ $user_id = intval($data['user_id']);
 $listing_id = intval($data['listing_id']);
 
 // Check if already in wishlist
-$stmt = $conn->prepare("SELECT * FROM Wishlist WHERE user_id = ? AND listing_id = ?");
-$stmt->bind_param("ii", $user_id, $listing_id);
+$stmt = $conn->prepare('SELECT * FROM "Wishlist" WHERE user_id = :user_id AND listing_id = :listing_id');
+$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 $stmt->execute();
-$result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
+if ($stmt->rowCount() > 0) {
     echo json_encode(['message' => 'Listing already in wishlist']);
-    $stmt->close();
-    $conn->close();
     exit;
 }
-$stmt->close();
 
 // Insert into wishlist
-$stmt = $conn->prepare("INSERT INTO Wishlist (user_id, listing_id) VALUES (?, ?)");
-$stmt->bind_param("ii", $user_id, $listing_id);
+$stmt = $conn->prepare('INSERT INTO "Wishlist" (user_id, listing_id) VALUES (:user_id, :listing_id)');
+$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => 'Added to wishlist']);
 } else {
-    echo json_encode(['error' => 'Failed to add to wishlist: ' . $stmt->error]);
+    echo json_encode(['error' => 'Failed to add to wishlist.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

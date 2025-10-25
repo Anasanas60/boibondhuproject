@@ -2,20 +2,21 @@
 
 -- Create Messages table for asynchronous messaging system
 CREATE TABLE IF NOT EXISTS messages (
-    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id SERIAL PRIMARY KEY,
     sender_id INT NOT NULL,
     receiver_id INT NOT NULL,
     message_text TEXT NOT NULL,
-    is_read TINYINT(1) DEFAULT 0,
+    is_read SMALLINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    INDEX idx_sender_receiver (sender_id, receiver_id),
-    INDEX idx_created_at (created_at)
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+CREATE INDEX idx_sender_receiver ON messages(sender_id, receiver_id);
+CREATE INDEX idx_created_at ON messages(created_at);
+
 -- Create Conversations view for easier conversation listing
-CREATE VIEW conversations AS
+CREATE OR REPLACE VIEW conversations AS
 SELECT
     LEAST(sender_id, receiver_id) as user1_id,
     GREATEST(sender_id, receiver_id) as user2_id,

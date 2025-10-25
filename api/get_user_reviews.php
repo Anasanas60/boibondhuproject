@@ -28,20 +28,17 @@ $user_id = intval($_GET['user_id']);
 
 $query = "SELECT rating_id, seller_id, buyer_id, rating, review, created_at 
           FROM ratings 
-          WHERE seller_id = ? OR buyer_id = ?";
+          WHERE seller_id = :user_id1 OR buyer_id = :user_id2";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $user_id, $user_id);
+$stmt->bindValue(':user_id1', $user_id, PDO::PARAM_INT);
+$stmt->bindValue(':user_id2', $user_id, PDO::PARAM_INT);
 $stmt->execute();
-$result = $stmt->get_result();
 
 $reviews = [];
-while ($row = $result->fetch_assoc()) {
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $reviews[] = $row;
 }
 
 echo json_encode(['success' => true, 'reviews' => $reviews]);
-
-$stmt->close();
-$conn->close();
 ?>

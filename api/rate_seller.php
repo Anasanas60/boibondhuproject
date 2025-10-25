@@ -47,28 +47,29 @@ if ($rating < 1 || $rating > 5) {
 }
 
 // Check if already rated
-$check_stmt = $conn->prepare("SELECT rating_id FROM ratings WHERE seller_id = ? AND buyer_id = ? AND listing_id = ?");
-$check_stmt->bind_param("iii", $seller_id, $buyer_id, $listing_id);
+$check_stmt = $conn->prepare("SELECT rating_id FROM ratings WHERE seller_id = :seller_id AND buyer_id = :buyer_id AND listing_id = :listing_id");
+$check_stmt->bindValue(':seller_id', $seller_id, PDO::PARAM_INT);
+$check_stmt->bindValue(':buyer_id', $buyer_id, PDO::PARAM_INT);
+$check_stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 $check_stmt->execute();
-$check_result = $check_stmt->get_result();
 
-if ($check_result->num_rows > 0) {
+if ($check_stmt->rowCount() > 0) {
     echo json_encode(['error' => 'You have already rated this seller for this listing.']);
-    $check_stmt->close();
     exit;
 }
-$check_stmt->close();
 
 // Insert rating - match your table columns exactly
-$stmt = $conn->prepare("INSERT INTO ratings (seller_id, buyer_id, listing_id, rating, review, comment) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("iiiiss", $seller_id, $buyer_id, $listing_id, $rating, $review, $comment);
+$stmt = $conn->prepare("INSERT INTO ratings (seller_id, buyer_id, listing_id, rating, review, comment) VALUES (:seller_id, :buyer_id, :listing_id, :rating, :review, :comment)");
+$stmt->bindValue(':seller_id', $seller_id, PDO::PARAM_INT);
+$stmt->bindValue(':buyer_id', $buyer_id, PDO::PARAM_INT);
+$stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
+$stmt->bindValue(':rating', $rating, PDO::PARAM_INT);
+$stmt->bindValue(':review', $review, PDO::PARAM_STR);
+$stmt->bindValue(':comment', $comment, PDO::PARAM_STR);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => 'Rating submitted successfully.', 'rating_id' => $stmt->insert_id]);
+    echo json_encode(['success' => 'Rating submitted successfully.', 'rating_id' => $conn->lastInsertId()]);
 } else {
-    echo json_encode(['error' => 'Failed to submit rating: ' . $stmt->error]);
+    echo json_encode(['error' => 'Failed to submit rating.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

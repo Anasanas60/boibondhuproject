@@ -72,15 +72,16 @@ if (!move_uploaded_file($file['tmp_name'], $filepath)) {
 // Use absolute URL path for the frontend
 $profilePicUrl = 'http://localhost/boibondhu/uploads/profile_pictures/' . $filename;
 
-$query = "UPDATE users SET profile_picture = ? WHERE user_id = ?";
+$query = "UPDATE users SET profile_picture = :profile_pic WHERE user_id = :user_id";
 $stmt = $conn->prepare($query);
 
 if (!$stmt) {
-    echo json_encode(['success' => false, 'error' => 'Database prepare failed: ' . $conn->error]);
+    echo json_encode(['success' => false, 'error' => 'Database prepare failed.']);
     exit;
 }
 
-$stmt->bind_param("si", $profilePicUrl, $user_id);
+$stmt->bindValue(':profile_pic', $profilePicUrl, PDO::PARAM_STR);
+$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 
 if ($stmt->execute()) {
     echo json_encode([
@@ -91,9 +92,6 @@ if ($stmt->execute()) {
 } else {
     // Delete the file if database update fails
     unlink($filepath);
-    echo json_encode(['success' => false, 'error' => 'Failed to update profile picture in database: ' . $stmt->error]);
+    echo json_encode(['success' => false, 'error' => 'Failed to update profile picture in database.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>

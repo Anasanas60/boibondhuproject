@@ -18,11 +18,10 @@ $user_id = intval($_GET['user_id']);
 
 try {
     // Fetch user info - FIXED: changed Users to users
-    $user_stmt = $conn->prepare("SELECT user_id, name, email FROM users WHERE user_id = ?");
-    $user_stmt->bind_param("i", $user_id);
+    $user_stmt = $conn->prepare("SELECT user_id, name, email FROM users WHERE user_id = :user_id");
+    $user_stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
     $user_stmt->execute();
-    $user_result = $user_stmt->get_result();
-    $user = $user_result->fetch_assoc();
+    $user = $user_stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
         echo json_encode(['error' => 'User not found']);
@@ -30,18 +29,18 @@ try {
     }
 
     // Count books listed by user
-    $books_stmt = $conn->prepare("SELECT COUNT(*) as books_listed FROM Listings WHERE seller_id = ?");
-    $books_stmt->bind_param("i", $user_id);
+    $books_stmt = $conn->prepare('SELECT COUNT(*) as books_listed FROM "Listings" WHERE seller_id = :user_id');
+    $books_stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
     $books_stmt->execute();
-    $books_result = $books_stmt->get_result();
-    $books_count = $books_result->fetch_assoc()['books_listed'];
+    $books_result = $books_stmt->fetch(PDO::FETCH_ASSOC);
+    $books_count = $books_result['books_listed'];
 
     // Count wishlist items
-    $wishlist_stmt = $conn->prepare("SELECT COUNT(*) as wishlist_count FROM Wishlist WHERE user_id = ?");
-    $wishlist_stmt->bind_param("i", $user_id);
+    $wishlist_stmt = $conn->prepare('SELECT COUNT(*) as wishlist_count FROM "Wishlist" WHERE user_id = :user_id');
+    $wishlist_stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
     $wishlist_stmt->execute();
-    $wishlist_result = $wishlist_stmt->get_result();
-    $wishlist_count = $wishlist_result->fetch_assoc()['wishlist_count'];
+    $wishlist_result = $wishlist_stmt->fetch(PDO::FETCH_ASSOC);
+    $wishlist_count = $wishlist_result['wishlist_count'];
 
     // Mock achievements and rating (since ratings table doesn't exist yet)
     $achievements = [
@@ -59,14 +58,7 @@ try {
         'achievements' => $achievements,
     ]);
 
-    // Close statements
-    $user_stmt->close();
-    $books_stmt->close();
-    $wishlist_stmt->close();
-
 } catch (Exception $e) {
     echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
 }
-
-$conn->close();
 ?>

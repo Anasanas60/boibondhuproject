@@ -31,42 +31,35 @@ if (!isset($_GET['user_id'])) {
 $user_id = intval($_GET['user_id']);
 
 // Get total listings count
-$queryListings = "SELECT COUNT(*) as total_listings FROM Listings WHERE seller_id = ?";
+$queryListings = 'SELECT COUNT(*) as total_listings FROM "Listings" WHERE seller_id = :user_id';
 $stmtListings = $conn->prepare($queryListings);
-$stmtListings->bind_param("i", $user_id);
+$stmtListings->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmtListings->execute();
-$resultListings = $stmtListings->get_result();
 $total_listings = 0;
-if ($row = $resultListings->fetch_assoc()) {
+if ($row = $stmtListings->fetch(PDO::FETCH_ASSOC)) {
     $total_listings = intval($row['total_listings']);
 }
-$stmtListings->close();
 
 // Get total wishlist count
-$queryWishlist = "SELECT COUNT(*) as total_wishlist FROM wishlists WHERE user_id = ?";
+$queryWishlist = "SELECT COUNT(*) as total_wishlist FROM wishlists WHERE user_id = :user_id";
 $stmtWishlist = $conn->prepare($queryWishlist);
-$stmtWishlist->bind_param("i", $user_id);
+$stmtWishlist->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmtWishlist->execute();
-$resultWishlist = $stmtWishlist->get_result();
 $total_wishlist = 0;
-if ($row = $resultWishlist->fetch_assoc()) {
+if ($row = $stmtWishlist->fetch(PDO::FETCH_ASSOC)) {
     $total_wishlist = intval($row['total_wishlist']);
 }
-$stmtWishlist->close();
 
 // Get total reviews count (ratings where user is seller or buyer)
-$queryReviews = "SELECT COUNT(*) as total_reviews FROM ratings WHERE seller_id = ? OR buyer_id = ?";
+$queryReviews = "SELECT COUNT(*) as total_reviews FROM ratings WHERE seller_id = :user_id1 OR buyer_id = :user_id2";
 $stmtReviews = $conn->prepare($queryReviews);
-$stmtReviews->bind_param("ii", $user_id, $user_id);
+$stmtReviews->bindValue(':user_id1', $user_id, PDO::PARAM_INT);
+$stmtReviews->bindValue(':user_id2', $user_id, PDO::PARAM_INT);
 $stmtReviews->execute();
-$resultReviews = $stmtReviews->get_result();
 $total_reviews = 0;
-if ($row = $resultReviews->fetch_assoc()) {
+if ($row = $stmtReviews->fetch(PDO::FETCH_ASSOC)) {
     $total_reviews = intval($row['total_reviews']);
 }
-$stmtReviews->close();
-
-$conn->close();
 
 echo json_encode([
     'success' => true,

@@ -32,23 +32,25 @@ if ($user_id <= 0 || $conversation_with <= 0) {
 }
 
 $sql = "SELECT message_id, sender_id, receiver_id, message_text, is_read, created_at FROM messages
-        WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))
+        WHERE ((sender_id = :user_id1 AND receiver_id = :conv_with1) OR (sender_id = :conv_with2 AND receiver_id = :user_id2))
         ORDER BY created_at ASC";
 
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
-    echo json_encode(['success' => false, 'error' => 'Database prepare failed: ' . $conn->error]);
+    echo json_encode(['success' => false, 'error' => 'Database prepare failed.']);
     exit;
 }
 
-$stmt->bind_param("iiii", $user_id, $conversation_with, $conversation_with, $user_id);
+$stmt->bindValue(':user_id1', $user_id, PDO::PARAM_INT);
+$stmt->bindValue(':conv_with1', $conversation_with, PDO::PARAM_INT);
+$stmt->bindValue(':conv_with2', $conversation_with, PDO::PARAM_INT);
+$stmt->bindValue(':user_id2', $user_id, PDO::PARAM_INT);
 
 if ($stmt->execute()) {
-    $result = $stmt->get_result();
     $messages = [];
 
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $messages[] = [
             'message_id' => $row['message_id'],
             'sender_id' => $row['sender_id'],
@@ -61,9 +63,6 @@ if ($stmt->execute()) {
 
     echo json_encode(['success' => true, 'messages' => $messages]);
 } else {
-    echo json_encode(['success' => false, 'error' => 'Failed to fetch messages: ' . $stmt->error]);
+    echo json_encode(['success' => false, 'error' => 'Failed to fetch messages.']);
 }
-
-$stmt->close();
-$conn->close();
 ?>
