@@ -31,7 +31,7 @@ $user_id = intval($data['user_id']);
 $listing_id = intval($data['listing_id']);
 
 // Check if already in wishlist
-$stmt = $conn->prepare('SELECT * FROM "Wishlist" WHERE user_id = :user_id AND listing_id = :listing_id');
+$stmt = $conn->prepare('SELECT * FROM wishlists WHERE user_id = :user_id AND listing_id = :listing_id');
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 $stmt->execute();
@@ -42,7 +42,7 @@ if ($stmt->rowCount() > 0) {
 }
 
 // Insert into wishlist
-$stmt = $conn->prepare('INSERT INTO "Wishlist" (user_id, listing_id) VALUES (:user_id, :listing_id)');
+$stmt = $conn->prepare('INSERT INTO wishlists (user_id, listing_id) VALUES (:user_id, :listing_id)');
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 

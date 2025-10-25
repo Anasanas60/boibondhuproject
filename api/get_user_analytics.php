@@ -29,14 +29,14 @@ try {
     }
 
     // Count books listed by user
-    $books_stmt = $conn->prepare('SELECT COUNT(*) as books_listed FROM "Listings" WHERE seller_id = :user_id');
+    $books_stmt = $conn->prepare('SELECT COUNT(*) as books_listed FROM listings WHERE seller_id = :user_id');
     $books_stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
     $books_stmt->execute();
     $books_result = $books_stmt->fetch(PDO::FETCH_ASSOC);
     $books_count = $books_result['books_listed'];
 
     // Count wishlist items
-    $wishlist_stmt = $conn->prepare('SELECT COUNT(*) as wishlist_count FROM "Wishlist" WHERE user_id = :user_id');
+    $wishlist_stmt = $conn->prepare('SELECT COUNT(*) as wishlist_count FROM wishlists WHERE user_id = :user_id');
     $wishlist_stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
     $wishlist_stmt->execute();
     $wishlist_result = $wishlist_stmt->fetch(PDO::FETCH_ASSOC);

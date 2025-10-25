@@ -26,8 +26,8 @@ if (!isset($_GET['user_id'])) {
 
 $user_id = intval($_GET['user_id']);
 
-$query = 'SELECT listing_id, seller_id, title, author, course_code, edition, price, "condition", description 
-          FROM "Listings" 
+$query = 'SELECT listing_id, seller_id, title, author, course_code, edition, price, condition, description 
+          FROM listings 
           WHERE seller_id = :user_id';
 
 $stmt = $conn->prepare($query);

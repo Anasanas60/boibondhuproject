@@ -31,7 +31,7 @@ $user_id = intval($data['user_id']);
 $listing_id = intval($data['listing_id']);
 
 // Delete from wishlist
-$stmt = $conn->prepare('DELETE FROM "Wishlist" WHERE user_id = :user_id AND listing_id = :listing_id');
+$stmt = $conn->prepare('DELETE FROM wishlists WHERE user_id = :user_id AND listing_id = :listing_id');
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 

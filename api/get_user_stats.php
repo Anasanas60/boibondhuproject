@@ -31,7 +31,7 @@ if (!isset($_GET['user_id'])) {
 $user_id = intval($_GET['user_id']);
 
 // Get total listings count
-$queryListings = 'SELECT COUNT(*) as total_listings FROM "Listings" WHERE seller_id = :user_id';
+$queryListings = 'SELECT COUNT(*) as total_listings FROM listings WHERE seller_id = :user_id';
 $stmtListings = $conn->prepare($queryListings);
 $stmtListings->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmtListings->execute();

@@ -27,8 +27,8 @@ if (!isset($_GET['user_id'])) {
 $user_id = intval($_GET['user_id']);
 
 $query = 'SELECT w.wishlist_id, w.listing_id, l.title, l.author, l.course_code, l.edition, l.price, l.condition, l.description 
-          FROM "Wishlist" w 
-          JOIN "Listings" l ON w.listing_id = l.listing_id 
+          FROM wishlists w 
+          JOIN listings l ON w.listing_id = l.listing_id 
           WHERE w.user_id = :user_id';
 
 $stmt = $conn->prepare($query);

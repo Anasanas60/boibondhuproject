@@ -1,5 +1,5 @@
 -- Migration to add missing columns to Listings table
-ALTER TABLE "Listings"
+ALTER TABLE listings
 ADD COLUMN edition VARCHAR(50),
 ADD COLUMN description TEXT,
 ADD COLUMN status VARCHAR(20) DEFAULT 'available',
@@ -16,12 +16,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_listings_updated_at
-BEFORE UPDATE ON "Listings"
+BEFORE UPDATE ON listings
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- Also add profile_picture column to Users table if it doesn't exist
-ALTER TABLE "Users"
+ALTER TABLE users
 ADD COLUMN profile_picture VARCHAR(255),
 ADD COLUMN campus VARCHAR(100),
 ADD COLUMN year VARCHAR(20);

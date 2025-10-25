@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 // Fetch all listings with seller information
-$query = 'SELECT l.listing_id, l.seller_id, l.title, l.author, l.course_code, l.edition, l.price, l."condition", l.description, u.name as seller_name FROM "Listings" l JOIN users u ON l.seller_id = u.user_id';
+$query = 'SELECT l.listing_id, l.seller_id, l.title, l.author, l.course_code, l.edition, l.price, l.condition, l.description, u.name as seller_name FROM listings l JOIN users u ON l.seller_id = u.user_id';
 $stmt = $conn->prepare($query);
 $stmt->execute();
 

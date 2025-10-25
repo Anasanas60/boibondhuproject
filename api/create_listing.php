@@ -40,7 +40,7 @@ $condition = trim($data['condition']);
 $description = trim($data['description']);
 
 // Insert new listing
-$stmt = $conn->prepare('INSERT INTO "Listings" (seller_id, title, author, course_code, edition, price, "condition", description) VALUES (:seller_id, :title, :author, :course_code, :edition, :price, :condition, :description)');
+$stmt = $conn->prepare('INSERT INTO listings (seller_id, title, author, course_code, edition, price, condition, description) VALUES (:seller_id, :title, :author, :course_code, :edition, :price, :condition, :description)');
 $stmt->bindValue(':seller_id', $seller_id, PDO::PARAM_INT);
 $stmt->bindValue(':title', $title, PDO::PARAM_STR);
 $stmt->bindValue(':author', $author, PDO::PARAM_STR);

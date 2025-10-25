@@ -42,7 +42,7 @@ if ($listing_id <= 0 || $seller_id <= 0) {
 
 // Prepare and execute DELETE statement
 // Only delete if both listing_id and seller_id match
-$stmt = $conn->prepare('DELETE FROM "Listings" WHERE listing_id = :listing_id AND seller_id = :seller_id');
+$stmt = $conn->prepare('DELETE FROM listings WHERE listing_id = :listing_id AND seller_id = :seller_id');
 $stmt->bindValue(':listing_id', $listing_id, PDO::PARAM_INT);
 $stmt->bindValue(':seller_id', $seller_id, PDO::PARAM_INT);
 
