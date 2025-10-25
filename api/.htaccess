@@ -4,6 +4,8 @@
     AddType application/javascript .js
     AddType text/css .css
     AddType application/json .json
+    AddType image/png .png
+    AddType image/jpeg .jpg .jpeg
 </IfModule>
 
 <IfModule mod_rewrite.c>
