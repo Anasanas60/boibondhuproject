@@ -1,4 +1,17 @@
 <?php
+// IMMEDIATE DEBUG - Add this at the VERY TOP
+error_log("=== IMMEDIATE DEBUG START ===");
+error_log("RAW REQUEST_URI: " . ($_SERVER['REQUEST_URI'] ?? 'NULL'));
+error_log("RAW PATH_INFO: " . ($_SERVER['PATH_INFO'] ?? 'NULL'));
+error_log("RAW SCRIPT_NAME: " . ($_SERVER['SCRIPT_NAME'] ?? 'NULL'));
+error_log("FULL SERVER VARS: " . json_encode([
+    'REQUEST_URI' => $_SERVER['REQUEST_URI'] ?? null,
+    'PATH_INFO' => $_SERVER['PATH_INFO'] ?? null,
+    'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'] ?? null,
+    'PHP_SELF' => $_SERVER['PHP_SELF'] ?? null,
+    'QUERY_STRING' => $_SERVER['QUERY_STRING'] ?? null
+]));
+
 // api/index.php - Main router
 
 // Set proper MIME types for static files
