@@ -9,7 +9,12 @@ function UserProfile() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/get_user_analytics.php')
+    // Build API base with index.php front-controller for Render
+    let API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+    API_BASE = API_BASE.replace(/\/$/, '');
+    if (!/\/index\.php$/.test(API_BASE)) API_BASE = API_BASE + '/index.php';
+
+    fetch(`${API_BASE}/get_user_analytics`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');

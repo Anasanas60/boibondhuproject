@@ -27,8 +27,10 @@ export const AuthProvider = ({ children }) => {
     if (!currentUserId) return;
 
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
-      const response = await fetch(`${API_BASE}/get_unread_count.php?user_id=${currentUserId}`);
+      let API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+      API_BASE = API_BASE.replace(/\/$/, '');
+      if (!/\/index\.php$/.test(API_BASE)) API_BASE = API_BASE + '/index.php';
+      const response = await fetch(`${API_BASE}/get_unread_count?user_id=${currentUserId}`);
       const data = await response.json();
       
       if (data.success) {

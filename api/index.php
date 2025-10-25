@@ -93,6 +93,7 @@ $routes = [
     'profile' => ['file' => 'upload_profile_picture.php', 'methods' => ['POST','PUT']],
     'analytics' => ['file' => 'user_analytics.php', 'methods' => ['GET']],
     'reviews' => ['file' => 'get_user_reviews.php', 'methods' => ['GET']],
+    'get_unread_count' => ['file' => 'GET_UNREAD_COUNT.PHP', 'methods' => ['GET']],
     'rate' => ['file' => 'rate_seller.php', 'methods' => ['POST']]
 ];
 

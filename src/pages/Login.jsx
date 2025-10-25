@@ -23,8 +23,10 @@ const Login = () => {
     console.log('Login attempt:', formData);
 
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
-      const response = await fetch(`${API_BASE}/login.php`, {
+      let API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+      API_BASE = API_BASE.replace(/\/$/, '');
+      if (!/\/index\.php$/.test(API_BASE)) API_BASE = API_BASE + '/index.php';
+      const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +40,7 @@ const Login = () => {
       const result = await response.json();
       console.log('API Response:', result);
       
-      if (result.success) {
+  if (result.success) {
         alert('Login successful!');
         // Use context login function instead of directly localStorage
         login(result.user);

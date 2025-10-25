@@ -1,10 +1,18 @@
 import { mockListings } from './mockListings';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Build API base so it always includes the index.php front-controller when required by hosting (e.g. Render)
+let _rawBase = import.meta.env.VITE_API_BASE_URL || '/api';
+// ensure no trailing slash
+_rawBase = _rawBase.replace(/\/$/, '');
+// append index.php if not already present
+if (!/\/index\.php$/.test(_rawBase)) {
+  _rawBase = _rawBase + '/index.php';
+}
+const API_BASE_URL = _rawBase;
 
 // User Authentication
 export const registerUser = async (userData) => {
-  const response = await fetch(`${API_BASE_URL}/register.php`, {
+  const response = await fetch(`${API_BASE_URL}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userData)
@@ -13,7 +21,7 @@ export const registerUser = async (userData) => {
 };
 
 export const loginUser = async (credentials) => {
-  const response = await fetch(`${API_BASE_URL}/login.php`, {
+  const response = await fetch(`${API_BASE_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials)
@@ -23,7 +31,7 @@ export const loginUser = async (credentials) => {
 
 // User Settings
 export const updateUserSettings = async (userData) => {
-  const response = await fetch(`${API_BASE_URL}/update_settings.php`, {
+  const response = await fetch(`${API_BASE_URL}/update_settings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userData)
@@ -34,7 +42,7 @@ export const updateUserSettings = async (userData) => {
 // Book Listings
 export const getListings = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/listings.php`);
+  const response = await fetch(`${API_BASE_URL}/listings`);
     if (!response.ok) {
       return { success: true, listings: mockListings };
     }
@@ -50,12 +58,12 @@ export const getListings = async () => {
 };
 
 export const getUserListings = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/get_user_listings.php?user_id=${userId}`);
+  const response = await fetch(`${API_BASE_URL}/get_user_listings?user_id=${userId}`);
   return response.json();
 };
 
 export const createListing = async (listingData) => {
-  const response = await fetch(`${API_BASE_URL}/create_listing.php`, {
+  const response = await fetch(`${API_BASE_URL}/create_listing`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(listingData)
@@ -64,7 +72,7 @@ export const createListing = async (listingData) => {
 };
 
 export const deleteListing = async (listingId) => {
-  const response = await fetch(`${API_BASE_URL}/delete_listing.php`, {
+  const response = await fetch(`${API_BASE_URL}/delete_listing`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ listing_id: listingId })
@@ -73,7 +81,7 @@ export const deleteListing = async (listingId) => {
 };
 
 export const updateListing = async (listingId, listingData) => {
-  const response = await fetch(`${API_BASE_URL}/update_listing.php`, {
+  const response = await fetch(`${API_BASE_URL}/update_listing`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ listing_id: listingId, ...listingData })
@@ -83,7 +91,7 @@ export const updateListing = async (listingId, listingData) => {
 
 // Wishlist
 export const addToWishlist = async (wishlistData) => {
-  const response = await fetch(`${API_BASE_URL}/add_wishlist.php`, {
+  const response = await fetch(`${API_BASE_URL}/add_wishlist`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(wishlistData)
@@ -92,12 +100,12 @@ export const addToWishlist = async (wishlistData) => {
 };
 
 export const getWishlist = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/get_wishlist.php?user_id=${userId}`);
+  const response = await fetch(`${API_BASE_URL}/get_wishlist?user_id=${userId}`);
   return response.json();
 };
 
 export const removeFromWishlist = async (wishlistData) => {
-  const response = await fetch(`${API_BASE_URL}/remove_wishlist.php`, {
+  const response = await fetch(`${API_BASE_URL}/remove_wishlist`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(wishlistData)
@@ -108,7 +116,7 @@ export const removeFromWishlist = async (wishlistData) => {
 // Reviews - UPDATED with proper error handling
 export const getUserReviews = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/get_user_reviews.php?user_id=${userId}`);
+  const response = await fetch(`${API_BASE_URL}/get_user_reviews?user_id=${userId}`);
     
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -130,7 +138,7 @@ export const getUserReviews = async (userId) => {
 
 export const getUserStats = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/get_user_stats.php?user_id=${userId}`);
+  const response = await fetch(`${API_BASE_URL}/get_user_stats?user_id=${userId}`);
     return await response.json();
   } catch (error) {
     console.error('Error fetching user stats:', error);
@@ -144,7 +152,7 @@ export const uploadProfilePicture = async (userId, file) => {
     formData.append('user_id', userId);
     formData.append('profile_picture', file);
 
-    const response = await fetch(`${API_BASE_URL}/upload_profile_picture.php`, {
+  const response = await fetch(`${API_BASE_URL}/upload_profile_picture`, {
       method: 'POST',
       body: formData,
     });
@@ -159,7 +167,7 @@ export const uploadProfilePicture = async (userId, file) => {
 // Messaging System
 export const sendMessage = async (senderId, receiverId, messageText) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/send_message.php`, {
+  const response = await fetch(`${API_BASE_URL}/send_message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -177,7 +185,7 @@ export const sendMessage = async (senderId, receiverId, messageText) => {
 
 export const getMessages = async (userId, conversationWith) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/get_messages.php?user_id=${userId}&conversation_with=${conversationWith}`);
+  const response = await fetch(`${API_BASE_URL}/get_messages?user_id=${userId}&conversation_with=${conversationWith}`);
     return await response.json();
   } catch (error) {
     console.error('Error fetching messages:', error);
@@ -187,7 +195,7 @@ export const getMessages = async (userId, conversationWith) => {
 
 export const getConversations = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/get_conversations.php?user_id=${userId}`);
+  const response = await fetch(`${API_BASE_URL}/get_conversations?user_id=${userId}`);
     return await response.json();
   } catch (error) {
     console.error('Error fetching conversations:', error);
@@ -198,7 +206,7 @@ export const getConversations = async (userId) => {
 // ✅ ADD MARK MESSAGES AS READ FUNCTION
 export const markMessagesAsRead = async (userId, otherUserId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/mark_messages_as_read.php?user_id=${userId}&other_user_id=${otherUserId}`);
+  const response = await fetch(`${API_BASE_URL}/mark_messages_as_read?user_id=${userId}&other_user_id=${otherUserId}`);
     return await response.json();
   } catch (error) {
     console.error('Error marking messages as read:', error);
@@ -209,7 +217,7 @@ export const markMessagesAsRead = async (userId, otherUserId) => {
 // Search Listings
 export const searchListings = async (query) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/search_listings.php?q=${encodeURIComponent(query)}`);
+  const response = await fetch(`${API_BASE_URL}/search_listings?q=${encodeURIComponent(query)}`);
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }

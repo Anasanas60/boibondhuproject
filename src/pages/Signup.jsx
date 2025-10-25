@@ -38,8 +38,10 @@ const Signup = () => {
     }
 
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
-      const response = await fetch(`${API_BASE}/register.php`, {
+      let API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+      API_BASE = API_BASE.replace(/\/$/, '');
+      if (!/\/index\.php$/.test(API_BASE)) API_BASE = API_BASE + '/index.php';
+      const response = await fetch(`${API_BASE}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
