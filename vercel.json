@@ -16,7 +16,10 @@
   "builds": [
     {
       "src": "vercel.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "public"
+      }
     }
   ],
   "routes": [
